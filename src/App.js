@@ -19,6 +19,14 @@ function App() {
     setFiles(newFiles);
   }, []);
 
+  const handleRemoveFile = useCallback((indexToRemove) => {
+    setFiles(prevFiles => prevFiles.filter((_, index) => index !== indexToRemove));
+  }, []);
+
+  const handleRemoveFiles = useCallback((indicesToRemove) => {
+    setFiles(prevFiles => prevFiles.filter((_, index) => !indicesToRemove.includes(index)));
+  }, []);
+
   const generateNewName = useCallback((originalName, index) => {
     const extension = originalName.includes('.') 
       ? originalName.substring(originalName.lastIndexOf('.'))
@@ -108,7 +116,7 @@ function App() {
             </div>
             
             {/* Bottom Row - File Preview */}
-            <FileList files={renamedFiles} />
+            <FileList files={renamedFiles} onRemoveFile={handleRemoveFile} onRemoveFiles={handleRemoveFiles} />
           </div>
         </div>
       </WarpBackground>
