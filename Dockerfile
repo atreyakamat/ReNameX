@@ -19,7 +19,7 @@ COPY tailwind.config.js postcss.config.js ./
 RUN npm run build
 
 # ---------- Runtime stage ----------
-FROM nginxinc/nginx-unprivileged:1.27-alpine AS runtime
+FROM nginxinc/nginx-unprivileged:1.31-alpine AS runtime
 
 LABEL org.opencontainers.image.title="ReNameX" \
       org.opencontainers.image.description="Bulk file renaming tool that runs entirely in the browser" \
