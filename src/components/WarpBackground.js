@@ -1,6 +1,6 @@
 import { cn } from "../lib/utils";
-import { motion } from "framer-motion";
-import React, { useCallback, useMemo } from "react";
+import { motion, useReducedMotion } from "framer-motion";
+import React, { useCallback, useMemo, useState } from "react";
 
 const Beam = ({
   width,
@@ -8,8 +8,11 @@ const Beam = ({
   delay,
   duration,
 }) => {
-  const hue = Math.floor(Math.random() * 360);
-  const ar = Math.floor(Math.random() * 10) + 1;
+  // Pick colour/shape once per beam so re-renders don't make beams flicker
+  const [{ hue, ar }] = useState(() => ({
+    hue: Math.floor(Math.random() * 360),
+    ar: Math.floor(Math.random() * 10) + 1,
+  }));
 
   return (
     <motion.div
@@ -64,6 +67,7 @@ export const WarpBackground = ({
   const rightBeams = useMemo(() => generateBeams(), [generateBeams]);
   const bottomBeams = useMemo(() => generateBeams(), [generateBeams]);
   const leftBeams = useMemo(() => generateBeams(), [generateBeams]);
+  const showBeams = !useReducedMotion();
 
   return (
     <div className={cn("relative rounded border p-20", className)} {...props}>
@@ -81,7 +85,7 @@ export const WarpBackground = ({
       >
         {/* top side */}
         <div className="absolute z-20 [transform-style:preserve-3d] [background-size:var(--beam-size)_var(--beam-size)] [background:linear-gradient(var(--grid-color)_0_1px,_transparent_1px_var(--beam-size))_50%_-0.5px_/var(--beam-size)_var(--beam-size),linear-gradient(90deg,_var(--grid-color)_0_1px,_transparent_1px_var(--beam-size))_50%_50%_/var(--beam-size)_var(--beam-size)] [container-type:inline-size] [height:100cqmax] [transform-origin:50%_0%] [transform:rotateX(-90deg)] [width:100cqi]">
-          {topBeams.map((beam, index) => (
+          {showBeams && topBeams.map((beam, index) => (
             <Beam
               key={`top-${index}`}
               width={`${beamSize}%`}
@@ -93,7 +97,7 @@ export const WarpBackground = ({
         </div>
         {/* bottom side */}
         <div className="absolute top-full [transform-style:preserve-3d] [background-size:var(--beam-size)_var(--beam-size)] [background:linear-gradient(var(--grid-color)_0_1px,_transparent_1px_var(--beam-size))_50%_-0.5px_/var(--beam-size)_var(--beam-size),linear-gradient(90deg,_var(--grid-color)_0_1px,_transparent_1px_var(--beam-size))_50%_50%_/var(--beam-size)_var(--beam-size)] [container-type:inline-size] [height:100cqmax] [transform-origin:50%_0%] [transform:rotateX(-90deg)] [width:100cqi]">
-          {bottomBeams.map((beam, index) => (
+          {showBeams && bottomBeams.map((beam, index) => (
             <Beam
               key={`bottom-${index}`}
               width={`${beamSize}%`}
@@ -105,7 +109,7 @@ export const WarpBackground = ({
         </div>
         {/* left side */}
         <div className="absolute left-0 top-0 [transform-style:preserve-3d] [background-size:var(--beam-size)_var(--beam-size)] [background:linear-gradient(var(--grid-color)_0_1px,_transparent_1px_var(--beam-size))_50%_-0.5px_/var(--beam-size)_var(--beam-size),linear-gradient(90deg,_var(--grid-color)_0_1px,_transparent_1px_var(--beam-size))_50%_50%_/var(--beam-size)_var(--beam-size)] [container-type:inline-size] [height:100cqmax] [transform-origin:0%_0%] [transform:rotate(90deg)_rotateX(-90deg)] [width:100cqh]">
-          {leftBeams.map((beam, index) => (
+          {showBeams && leftBeams.map((beam, index) => (
             <Beam
               key={`left-${index}`}
               width={`${beamSize}%`}
@@ -117,7 +121,7 @@ export const WarpBackground = ({
         </div>
         {/* right side */}
         <div className="absolute right-0 top-0 [transform-style:preserve-3d] [background-size:var(--beam-size)_var(--beam-size)] [background:linear-gradient(var(--grid-color)_0_1px,_transparent_1px_var(--beam-size))_50%_-0.5px_/var(--beam-size)_var(--beam-size),linear-gradient(90deg,_var(--grid-color)_0_1px,_transparent_1px_var(--beam-size))_50%_50%_/var(--beam-size)_var(--beam-size)] [container-type:inline-size] [height:100cqmax] [width:100cqh] [transform-origin:100%_0%] [transform:rotate(-90deg)_rotateX(-90deg)]">
-          {rightBeams.map((beam, index) => (
+          {showBeams && rightBeams.map((beam, index) => (
             <Beam
               key={`right-${index}`}
               width={`${beamSize}%`}

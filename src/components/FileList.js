@@ -1,159 +1,157 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { formatBytes } from '../lib/rename';
 
-const FileList = ({ files, onRemoveFile, onRemoveFiles }) => {
-  const [selectedFiles, setSelectedFiles] = useState(new Set());
+const FileIcon = ({ className }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+  </svg>
+);
 
-  const handleSelectFile = (index) => {
-    setSelectedFiles(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(index)) {
-        newSet.delete(index);
+const TrashIcon = ({ className }) => (
+  <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+  </svg>
+);
+
+const FileList = ({ files, onRemoveFiles }) => {
+  const [selectedIds, setSelectedIds] = useState(new Set());
+
+  // Drop selections for files that no longer exist (removed or cleared)
+  useEffect(() => {
+    setSelectedIds(prev => {
+      const existing = new Set(files.map(file => file.id));
+      const next = new Set([...prev].filter(id => existing.has(id)));
+      return next.size === prev.size ? prev : next;
+    });
+  }, [files]);
+
+  const toggleSelected = (id) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
       } else {
-        newSet.add(index);
+        next.add(id);
       }
-      return newSet;
+      return next;
     });
   };
 
+  const allSelected = files.length > 0 && selectedIds.size === files.length;
+
   const handleSelectAll = () => {
-    if (selectedFiles.size === files.length) {
-      setSelectedFiles(new Set());
-    } else {
-      setSelectedFiles(new Set(files.map((_, index) => index)));
-    }
+    setSelectedIds(allSelected ? new Set() : new Set(files.map(file => file.id)));
   };
 
   const handleRemoveSelected = () => {
-    const indicesToRemove = Array.from(selectedFiles);
-    onRemoveFiles(indicesToRemove);
-    setSelectedFiles(new Set());
+    onRemoveFiles([...selectedIds]);
+    setSelectedIds(new Set());
   };
+
+  const title = (
+    <h2 className="text-xl font-semibold text-white flex items-center">
+      <FileIcon className="w-5 h-5 mr-2 text-violet-400" />
+      File Preview
+    </h2>
+  );
 
   if (files.length === 0) {
     return (
-      <div className="card-gradient">
-        <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
-          <svg className="w-5 h-5 mr-2 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
-          File Preview
-        </h2>
-        
+      <section className="card-gradient">
+        {title}
         <div className="text-center py-12">
-          <div className="mx-auto w-16 h-16 bg-gradient-to-br from-gray-100 to-violet-100 rounded-full flex items-center justify-center mb-4 animate-pulse">
-            <svg className="w-8 h-8 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
+          <div className="mx-auto w-16 h-16 bg-violet-500/15 border border-violet-400/30 rounded-full flex items-center justify-center mb-4">
+            <FileIcon className="w-8 h-8 text-violet-300" />
           </div>
           <p className="text-white text-lg font-medium">No files selected</p>
-          <p className="text-sm text-gray-300 mt-1">Upload files to see the live preview</p>
-          
-          {/* Floating dots */}
-          <div className="flex justify-center space-x-2 mt-6">
-            <div className="w-2 h-2 bg-violet-300 rounded-full animate-bounce"></div>
-            <div className="w-2 h-2 bg-indigo-300 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-            <div className="w-2 h-2 bg-purple-300 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
-          </div>
+          <p className="text-sm text-violet-200/70 mt-1">Your original → new names will appear here</p>
         </div>
-      </div>
+      </section>
     );
   }
 
   return (
-    <div className="card-gradient">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-semibold text-white flex items-center">
-          <svg className="w-5 h-5 mr-2 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
-          File Preview
-        </h2>
-        <div className="flex items-center space-x-3">
-          {selectedFiles.size > 0 && (
+    <section className="card-gradient">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        {title}
+        <div className="flex flex-wrap items-center gap-2">
+          {selectedIds.size > 0 && (
             <button
+              type="button"
               onClick={handleRemoveSelected}
-              className="px-3 py-1 bg-red-500/20 hover:bg-red-500/30 text-red-400 hover:text-red-300 text-sm font-medium rounded-full border border-red-500/30 hover:border-red-400/50 transition-all duration-200 flex items-center space-x-1"
+              className="px-3 py-1 bg-red-500/20 hover:bg-red-500/30 text-red-300 hover:text-red-200 text-sm font-medium rounded-full border border-red-500/30 hover:border-red-400/50 transition-colors flex items-center gap-1"
             >
-              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-              <span>Remove {selectedFiles.size}</span>
+              <TrashIcon className="w-3 h-3" />
+              <span>Remove {selectedIds.size}</span>
             </button>
           )}
           <button
+            type="button"
             onClick={handleSelectAll}
-            className="px-3 py-1 bg-violet-500/20 hover:bg-violet-500/30 text-violet-400 hover:text-violet-300 text-sm font-medium rounded-full border border-violet-500/30 hover:border-violet-400/50 transition-all duration-200"
+            className="px-3 py-1 bg-violet-500/20 hover:bg-violet-500/30 text-violet-200 text-sm font-medium rounded-full border border-violet-500/30 hover:border-violet-400/50 transition-colors"
           >
-            {selectedFiles.size === files.length ? 'Deselect All' : 'Select All'}
+            {allSelected ? 'Deselect All' : 'Select All'}
           </button>
-          <span className="px-3 py-1 bg-gradient-to-r from-violet-100 to-indigo-100 text-violet-800 text-sm font-medium rounded-full border border-violet-200/50">
+          <span className="px-3 py-1 bg-white/10 text-white text-sm font-medium rounded-full border border-white/15">
             {files.length} file{files.length !== 1 ? 's' : ''}
           </span>
         </div>
       </div>
-      
-      <div className="space-y-3 max-h-96 overflow-y-auto">
-        {files.map((file, index) => (
-          <div key={index} className={`file-item group ${selectedFiles.has(index) ? 'ring-2 ring-violet-400 bg-gradient-to-r from-violet-800/90 to-purple-800/90' : ''}`}>
-            <div className="flex items-center space-x-3">
-              <input
-                type="checkbox"
-                checked={selectedFiles.has(index)}
-                onChange={() => handleSelectFile(index)}
-                className="w-4 h-4 text-violet-600 bg-gray-100 border-gray-300 rounded focus:ring-violet-500 focus:ring-2"
-              />
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center space-x-3 mb-2">
-                  <div className="flex-shrink-0">
-                    <div className="w-8 h-8 bg-gradient-to-br from-violet-100 to-indigo-100 rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform duration-200">
-                      <svg className="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                      </svg>
-                    </div>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-gray-300 truncate">
-                      Original: <span className="font-medium text-white">{file.originalName}</span>
-                    </p>
-                    <p className="text-sm font-medium text-white truncate">
-                      Renamed: <span className="text-violet-300 bg-violet-900/50 px-2 py-0.5 rounded">{file.newName}</span>
-                    </p>
-                  </div>
+
+      <ul className="space-y-2 max-h-[28rem] overflow-y-auto pr-1">
+        {files.map((file) => {
+          const selected = selectedIds.has(file.id);
+          return (
+            <li key={file.id} className={`file-item group ${selected ? 'ring-2 ring-violet-400' : ''}`}>
+              <label className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={selected}
+                  onChange={() => toggleSelected(file.id)}
+                  className="w-4 h-4 flex-shrink-0 accent-violet-500"
+                  aria-label={`Select ${file.originalName}`}
+                />
+                <div className="w-9 h-9 flex-shrink-0 bg-violet-500/20 border border-violet-400/30 rounded-lg flex items-center justify-center">
+                  <FileIcon className="w-4 h-4 text-violet-200" />
                 </div>
-              </div>
-            
-              <div className="flex-shrink-0">
-                <div className="flex items-center space-x-2">
-                  <span className="px-2 py-1 bg-gradient-to-r from-green-100 to-emerald-100 text-green-800 text-xs font-medium rounded-full border border-green-200/50">
-                    Ready
-                  </span>
-                  <svg className="w-4 h-4 text-green-500 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                  </svg>
-                  <button
-                    onClick={() => onRemoveFile(index)}
-                    className="ml-2 p-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 hover:text-red-300 rounded-lg transition-all duration-200 hover:scale-110 border border-red-500/30 hover:border-red-400/50"
-                    title="Remove file"
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-violet-200/70 truncate" title={file.originalName}>
+                    {file.originalName}
+                  </p>
+                  <p className="text-sm font-mono font-medium text-white truncate" title={file.newName}>
+                    <span className="text-violet-400 mr-1" aria-hidden="true">→</span>
+                    {file.newName}
+                  </p>
+                </div>
+              </label>
+
+              <div className="flex items-center gap-2 flex-shrink-0 ml-3">
+                {file.adjusted && (
+                  <span
+                    className="hidden sm:inline px-2 py-0.5 bg-amber-500/15 text-amber-300 text-xs font-medium rounded-full border border-amber-400/30"
+                    title="Another file would have the same name, so a number was added"
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
-                </div>
+                    Renumbered
+                  </span>
+                )}
+                <span className="hidden sm:inline text-xs text-violet-200/60 tabular-nums w-16 text-right">
+                  {formatBytes(file.size)}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => onRemoveFiles([file.id])}
+                  className="p-2 text-red-300 hover:text-red-200 hover:bg-red-500/20 rounded-lg transition-colors"
+                  title="Remove file"
+                  aria-label={`Remove ${file.originalName}`}
+                >
+                  <TrashIcon className="w-4 h-4" />
+                </button>
               </div>
-            </div>
-          </div>
-        ))}
-      </div>
-      
-      {files.length > 5 && (
-        <div className="mt-4 text-center">
-          <p className="text-sm text-gray-300">
-            Showing all <span className="font-semibold text-white">{files.length}</span> files
-          </p>
-        </div>
-      )}
-    </div>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
   );
 };
 

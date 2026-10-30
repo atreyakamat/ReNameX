@@ -1,0 +1,17 @@
+node_modules
+build
+coverage
+.git
+.github
+.gitignore
+.gitattributes
+.dockerignore
+Dockerfile
+docker-compose.yml
+README.md
+LICENSE
+.vscode
+.idea
+.env*
+npm-debug.log*
+*.md

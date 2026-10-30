@@ -1,0 +1,13 @@
+services:
+  renamex:
+    build: .
+    image: renamex:latest
+    container_name: renamex
+    ports:
+      - "3000:8080"
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true

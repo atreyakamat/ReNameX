@@ -1,14 +1,20 @@
 # ReNameX - Bulk File Renaming Tool
 
+[![CI](https://github.com/atreyakamat/ReNameX/actions/workflows/ci.yml/badge.svg)](https://github.com/atreyakamat/ReNameX/actions/workflows/ci.yml)
+[![Docker](https://github.com/atreyakamat/ReNameX/actions/workflows/docker.yml/badge.svg)](https://github.com/atreyakamat/ReNameX/actions/workflows/docker.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-violet.svg)](LICENSE)
+
 ReNameX is your all-in-one, blazing-fast file renaming powerhouse — built entirely with React and designed to work right inside your browser. No server, no setup, no worries.
 
 ## 🚀 Features
 
 - **100% Client-Side**: All processing happens in your browser - your files never leave your device
 - **Bulk Renaming**: Select multiple files and rename them all at once
-- **Custom Patterns**: Use `{index}` placeholder with custom naming patterns
+- **Custom Patterns**: Use the `{index}` placeholder (as many times as you like) in your naming pattern
+- **No Silent Overwrites**: Files that would end up with the same name get a ` (2)`, ` (3)`… suffix
 - **Flexible Indexing**: Set custom start index and leading zeros
-- **Live Preview**: See original vs renamed file names in real-time
+- **Live Preview**: See original vs renamed file names (and sizes) in real-time
+- **Drag & Drop**: Add files in several batches; duplicates of the same file are ignored
 - **ZIP Download**: Get all renamed files packaged in a convenient ZIP file
 - **Modern UI**: Beautiful, responsive design with Tailwind CSS
 - **No Upload Required**: Files are processed locally without any server interaction
@@ -41,10 +47,40 @@ ReNameX is your all-in-one, blazing-fast file renaming powerhouse — built enti
 4. **Open your browser**
    Navigate to `http://localhost:3000`
 
+## 🐳 Run with Docker
+
+The image is a multi-stage build: Node builds the app, then an unprivileged
+nginx serves the static files on port **8080** (gzip, long-term caching for
+hashed assets, security headers, and a `/healthz` endpoint).
+
+**Docker Compose (easiest)**
+
+```bash
+docker compose up -d --build
+```
+
+Then open `http://localhost:3000`. Stop it with `docker compose down`.
+
+**Plain Docker**
+
+```bash
+docker build -t renamex .
+docker run -d --name renamex -p 3000:8080 renamex
+```
+
+**Prebuilt image from GitHub Container Registry**
+
+Every push to `main` (and every `v*.*.*` tag) publishes a multi-arch
+(`amd64`/`arm64`) image:
+
+```bash
+docker run -d -p 3000:8080 ghcr.io/atreyakamat/renamex:latest
+```
+
 ## 📖 How to Use
 
 1. **Select Files**: Click the upload area or drag & drop multiple files
-2. **Set Pattern**: Define your naming pattern using `{index}` placeholder (e.g., `photo_{index}`)
+2. **Set Pattern**: Define your naming pattern using the `{index}` placeholder (e.g., `photo_{index}`) — the **+ {index}** button inserts it at the cursor
 3. **Configure Options**: Set start index and leading zeros as needed
 4. **Preview**: Review the original vs renamed file names
 5. **Download**: Click "Download ZIP" to get all renamed files
@@ -66,16 +102,34 @@ ReNameX operates entirely in your browser:
 ## 🏗️ Project Structure
 
 ```
+.github/
+├── workflows/ci.yml       # Tests + production build on every push / PR
+├── workflows/docker.yml   # Builds, smoke-tests and publishes the image to GHCR
+└── dependabot.yml         # Weekly npm / Docker / Actions updates
 src/
 ├── components/
 │   ├── Header.js          # App header with branding
-│   ├── FileUpload.js      # File selection component
-│   ├── PatternInput.js    # Pattern configuration
+│   ├── FileUpload.js      # Drag & drop / file picker
+│   ├── PatternInput.js    # Pattern configuration + live example
 │   ├── FileList.js        # Live preview of renames
-│   └── DownloadSection.js # Download and actions
+│   ├── DownloadSection.js # Download and actions
+│   ├── Footer.js          # Footer with repo link
+│   └── WarpBackground.js  # Animated background
+├── lib/
+│   ├── rename.js          # Pure renaming logic (tested)
+│   └── rename.test.js     # Unit tests
 ├── App.js                 # Main application component
-├── index.js              # React entry point
-└── index.css             # Tailwind CSS styles
+├── index.js               # React entry point
+└── index.css              # Tailwind CSS styles
+Dockerfile                 # Multi-stage build -> nginx
+nginx.conf                 # SPA routing, caching, security headers
+docker-compose.yml         # One-command local run
+```
+
+## 🧪 Tests
+
+```bash
+npm test
 ```
 
 ## 🚀 Deployment
@@ -131,11 +185,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**ReNameX** - Because renaming files should feel satisfying, not frustrating. ⚡X
-ReNameX is your all-in-one, blazing-fast file renaming powerhouse — built entirely with React and designed to work right inside your browser. No server, no setup, no worries.
-
-ReNameX gives you full control over how your files are named. Whether you’re dealing with hundreds of images, design assets, documents, or code files, just drop them in, define your pattern (like project_{index}), and boom — ReNameX renames everything on the fly. With smart features like custom starting index, leading zero support, and an instant ZIP export, it's the perfect tool for creators, developers, content managers, and anyone tired of renaming files one by one.
-
-The best part? It’s fully client-side, meaning your files never leave your device. ⚡
-
-Crafted with ⚛️ React, powered by 📦 JSZip and 💾 FileSaver.js, ReNameX is built for speed, simplicity, and total privacy — because renaming files should feel satisfying, not frustrating.
+**ReNameX** - Because renaming files should feel satisfying, not frustrating. ⚡
