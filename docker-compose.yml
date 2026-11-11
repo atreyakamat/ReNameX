@@ -6,6 +6,7 @@ services:
     ports:
       - "3000:8080"
     restart: unless-stopped
+    mem_limit: 128m
     environment:
       # Pages allowed to show ReNameX in a frame: itself and the House of Stix control room.
       FRAME_ANCESTORS: "'self' ${CONTROL_ROOM_ORIGIN:-http://localhost:8200}"
