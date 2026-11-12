@@ -27,6 +27,9 @@ LABEL org.opencontainers.image.title="ReNameX" \
       org.opencontainers.image.licenses="MIT"
 
 COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY templates/renamex.conf.template /etc/nginx/templates/renamex.conf.template
+# Render templates into /tmp (writable even with a read-only root file system).
+ENV NGINX_ENVSUBST_OUTPUT_DIR=/tmp FRAME_ANCESTORS="'self'"
 COPY --from=build /app/build /usr/share/nginx/html
 
 EXPOSE 8080
