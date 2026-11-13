@@ -5,7 +5,7 @@
   "dependencies": {
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^14.6.8",
+    "@testing-library/user-event": "^14.6.9",
     "clsx": "^2.1.1",
     "file-saver": "^2.0.5",
     "framer-motion": "^12.23.5",
