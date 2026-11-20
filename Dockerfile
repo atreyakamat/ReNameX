@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # ---------- Build stage ----------
-FROM node:25-alpine AS build
+FROM node:26-alpine AS build
 WORKDIR /app
 
 ENV CI=true \
